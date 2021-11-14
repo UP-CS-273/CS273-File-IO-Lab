@@ -4,10 +4,17 @@
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.prefs.*;
 import javax.swing.*;
 
 public class FileFrame extends JFrame
     implements WindowListener, ActionListener {
+
+    private static final Color LIGHT_GREEN = new Color(180, 255, 180);
+    private static final Color LIGHT_BLUE = new Color(200, 200, 255);
+    private static final String PREF_NODE_CS273 = "cs273";
+    private static final String PREF_KEY_DIR = "dir";
+
     private JButton inputButton;
     private JTextField inputFileField;
     private JTextField callField;
@@ -23,9 +30,6 @@ public class FileFrame extends JFrame
     private JButton deleteFileButton;
     private JButton appendStringButton;
     private FileHandler fh;
-
-    private static Color LIGHT_GREEN = new Color(180,255,180);
-    private static Color LIGHT_BLUE = new Color(200,200,255);
 
     public static void main(String[] args) {
         FileFrame ff = new FileFrame();
@@ -156,7 +160,7 @@ public class FileFrame extends JFrame
 
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
+                File selectedFile = getSelectedFile(fileChooser);
                 inputFileField.setText("" + selectedFile.getAbsolutePath());
             }
         }
@@ -165,7 +169,7 @@ public class FileFrame extends JFrame
 
             int result = fileChooser.showSaveDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
+                File selectedFile = getSelectedFile(fileChooser);
                 String fileName = "" + selectedFile.getAbsolutePath();
                 if (fileName.toLowerCase().endsWith(".java")) {
                     messageArea.setText("Output file may not end with '.java'");
@@ -256,10 +260,17 @@ public class FileFrame extends JFrame
         
     }
 
+    private File getSelectedFile(JFileChooser fileChooser) {
+        File selectedFile = fileChooser.getSelectedFile();
+        Preferences.userRoot().node(PREF_NODE_CS273).put(PREF_KEY_DIR, selectedFile.getParentFile().getAbsolutePath());
+        return selectedFile;
+    }
+
     private JFileChooser createFileChooser() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        File currentDir = new File(Dir.cur);
+        String path = Preferences.userRoot().node(PREF_NODE_CS273).get(PREF_KEY_DIR, Dir.cur);
+        File currentDir = new File(path);
         fileChooser.setCurrentDirectory(currentDir);
         return fileChooser;
     }
